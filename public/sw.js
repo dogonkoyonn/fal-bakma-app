@@ -1,8 +1,10 @@
-const CACHE_NAME = 'fal-bakma-v2';
+const CACHE_NAME = 'fal-bakma-v3';
 const urlsToCache = [
-  'index.html',
-  'manifest.json',
-  'vite.svg'
+  './',
+  './index.html',
+  './manifest.json',
+  './vite.svg',
+  './sw.js'
 ];
 
 self.addEventListener('install', (event) => {
@@ -13,6 +15,25 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.match(event.request).then((response) => response || fetch(event.request))
+    caches.match(event.request).then((response) => {
+      if (response) {
+        return response;
+      }
+      return fetch(event.request);
+    })
+  );
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME) {
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
   );
 });
